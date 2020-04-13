@@ -1,9 +1,11 @@
-############################################################
-####             All collections functions             #####
-############################################################
-
-import psycopg2
+import os, sys, psycopg2
 from psycopg2 import sql
+
+## Import from submodule VS-Utils
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+par_dir = os.path.abspath(os.path.join(cur_dir, os.path.pardir))
+sys.path.append(os.path.join(par_dir, "VS-Utils"))
+from prints import errmsg, debugmsg
 
 ## Get the collection with the passed collection name
 def get_collection(cur, playlist, user=None):
@@ -20,14 +22,29 @@ def get_collection(cur, playlist, user=None):
         )
         result = cur.fetchone()
     if(result == None):
-        print("[-] Could not find the playlist")
+        errmsg("Could not find the playlist")
+        return None
+    return(result)
+
+## Get the collection of a single user
+def get_collections_of_user(cur, user):
+    if(user == None):
+        errmsg("get_collections_of_user() failed - User missing"); exit()
+    else:
+        cur.execute(
+            sql.SQL("SELECT * FROM collection WHERE uid = %s AND (title != %s AND title != %s AND title != %s);"),
+            [str(user), "syno_watchlist", "syno_favorite", "syno_default_shared"]
+        )
+        result = cur.fetchall()
+    if(result == None):
+        errmsg("User does not have any playlist information")
         return None
     return(result)
 
 ## Create the new collection for the passed UserID
 def create_new_collection(conn, cur, collection_info, userid):
     if(int(userid) == int(collection_info[1])):
-        print("[-] The ownerID and the userID are equal")
+        errmsg("The ownerID and the userID are equal")
         return None
 
     ## Insert the collection
@@ -38,7 +55,7 @@ def create_new_collection(conn, cur, collection_info, userid):
         conn.commit()
 
     except psycopg2.IntegrityError:
-        print("[-] Could not insert the new playlist, the playlist already exists (%s)", userid)
+        errmsg("Could not insert the new playlist, the playlist already exists (%s)", userid)
         return None
 
     ## Get the ID of the new created collection
@@ -48,7 +65,7 @@ def create_new_collection(conn, cur, collection_info, userid):
     )
     result = cur.fetchone()
     if(result == None):
-        print("[-] Could not insert the new playlist, the playlist already exists")
+        errmsg("Could not insert the new playlist, the playlist already exists")
         return None
     return result[0]
 
@@ -76,9 +93,8 @@ def get_all_items_of_collection(cur, collection_info):
     ## Parse the mapper_id and collection_id
     result = [r[1:3] for r in result]
     if(result == None or len(result) == 0):
-        print("[-] The playlist is empty")
+        errmsg("The playlist is empty")
         return None
-
     return(result)
 
 ## Delete all items of a collection
@@ -103,6 +119,6 @@ def add_all_items_to_collection(conn, cur, items, new_collection_id):
             sql.SQL(sql_query)
         )
         conn.commit()
-    except psycopg2.IntegrityError, TypeError:
-        print("[-] Could not insert the items to the new playlist")
+    except psycopg2.IntegrityError:
+        errmsg("Could not insert the items to the new playlist")
         return None

@@ -1,12 +1,9 @@
-############################################################
-####                 All mode functions                #####
-############################################################
-
-from vscollections import get_collection, create_new_collection
-from vscollections import add_all_items_to_collection, delete_all_items_of_collection
-from vscollections import delete_collection, get_all_items_of_collection
-from connections import connect, close_connection
-from users import get_user_selection 
+from .vscollections import get_collection, create_new_collection
+from .vscollections import add_all_items_to_collection, delete_all_items_of_collection
+from .vscollections import delete_collection, get_all_items_of_collection
+from .connections import connect, close_connection
+from .users import get_user_selection
+from prints import errmsg, debugmsg
 
 ## Add a colletion to all users
 def copy_all_mode(args):
@@ -14,7 +11,7 @@ def copy_all_mode(args):
     ## Connect to Video Station database
     conn, cur = connect()
     if(conn == None): exit(-1)
-    print("[x] Connected successfully to Synology VideoStation database")
+    debugmsg("Connected successfully to Synology VideoStation database", args.mode)
 
     ## Get admin and its ID
     admin_id = get_user_selection('admin_only')[1]
@@ -24,21 +21,21 @@ def copy_all_mode(args):
     if(collection_info == None):
         close_connection(conn, cur)
         exit(-1)
-    print("[x] Get the playlist information")
+    debugmsg("Get the playlist information", args.mode)
 
     ## Get all users except the owner of the collection
     users_id = [u[1] for u in get_user_selection()]
     if(len(users_id) == 0):
         close_connection(conn, cur)
         exit(-1)
-    print("[x] Get all user information")
+    debugmsg("Get all user information", args.mode)
 
     ## Get all items of the collection
     items = get_all_items_of_collection(cur, collection_info)
     if(items == None):
         close_connection(conn, cur)
         exit(-1)
-    print("[x] Get all items of the playlist")
+    debugmsg("Get all items of the playlist", args.mode)
 
     for user in sorted(users_id):
         ## Create the new collection
@@ -46,14 +43,14 @@ def copy_all_mode(args):
         if(new_collection_id == None):
                 close_connection(conn, cur)
                 exit(-1)
-        print("[x] Inserted the new playlist successfully for user: {}".format(user))
+        debugmsg("Inserted the new playlist successfully for user", args.mode, (user,))
 
         ## Add all items to the new collection
         add_all_items_to_collection(conn, cur, items, new_collection_id)
         if(items == None):
                 close_connection(conn, cur)
                 exit(-1)
-        print("[x] Added all items to the new playlist for user: {}".format(user))
+        debugmsg("Added all items to the new playlist for user", args.mode, (user,))
         new_collection_id = None
 
     ## Close connection
@@ -63,10 +60,9 @@ def copy_all_mode(args):
 def delete_all_mode(args):
 
     ## Connect to Video Station database
-    print("    Connecting to Synology VideoStation database...")
     conn, cur = connect()
     if(conn == None): exit(-1)
-    print("[x] Connected successfully")
+    debugmsg("Connected successfully to Synology VideoStation database", args.mode)
 
     ## Get admin and its ID
     admin_id = get_user_selection('admin_only')[1]
@@ -75,18 +71,18 @@ def delete_all_mode(args):
     collection_info = get_collection(cur, args.playlist)
     if(collection_info == None):
         close_connection(conn, cur)
-        exit(-1)    
+        exit(-1)
     collection_info = [c for c in collection_info if c[1] != admin_id]
-    print("[x] Get all playlist information")
+    debugmsg("Get all playlist information", args.mode)
 
     for collection in collection_info:
         ## Delete all items of a collection
         delete_all_items_of_collection(conn, cur, collection)
-        print("[x] Delete all items of the playlist for user: {}".format(collection[1]))
+        debugmsg("Delete all items of the playlist for user", args.mode, (collection[1],))
 
         ## Delete the collection itself
         delete_collection(conn, cur, collection)
-        print("[x] Delete the playlist itself for user: {}".format(collection[1]))
+        debugmsg("Delete the playlist itself for user", args.mode, (collection[1],))
 
     ## Close connection
     close_connection(conn, cur)

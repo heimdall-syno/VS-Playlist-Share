@@ -1,25 +1,83 @@
 VS-Playlist-Share
 =========
-VS-Playlist-Share is a script for sharing playlists within the VideoStation of synology because the VideoStation doesn't support it. It enables the copying of a single playlist owning by the admin to a single user or to all users of the VideoStation. The playlists can be deleted analogously.
+VS-Playlist-Share is a script for sharing playlists within the Synology's Video Station. It is intended to run as Scheduled Task in DSM to periodically check whether all playlists of the admin are shared with all users. Of course there is also an manual mode in case the admin wants to manually copy or delete playlists.
 
-The script is executed by an admin user via SSH on the diskstation.
+## Overview of the VS-Components
+```
+             +---------------------------------------------------------------------------------+
+             |                                  Synology DSM                                   |
+             +---------------------------------------------------------------------------------+
+             |                  +--------------------+  +-----------------+                    |
+             |                  |       Docker       |  |      Docker     |                    |
+             |                  |transmission.openVpn|  |     Handbrake   |                    |
+             |                  +--------------------+  +-----------------+                    |
+             | +------------+   | +---------------+  |  | +-------------+ |  +---------------+ |
+             | |VS-SynoIndex|   | |VS-Transmission|  |  | | VS-Handbrake| |  |VS-Notification| |
+             | |   (Task)   +---->+   (Script)    +------>+   (Script)  +--->+    (Task)     | |
+             | +------------+   | +---------------+  |  | +-------------+ |  +---------------+ |
+             |                  +--------------------+  +-----------------+                    |
+             |                                                                                 |
+             | +-----------------+                                                             |
+             | |VS-Playlist-Share|                                                             |
+             | |     (Task)      |                                                             |
+             | +-----------------+                                                             |
+             +---------------------------------------------------------------------------------+
+```
+
+Check out the other components:
+
+VS-SynoIndex:      https://github.com/heimdall-syno/VS-SynoIndex
+
+VS-Transmission:   https://github.com/heimdall-syno/VS-Transmission
+
+VS-Handbrake:      https://github.com/heimdall-syno/VS-Handbrake
+
+VS-Notification:   https://github.com/heimdall-syno/VS-Notification
 
 #### Requirements
-- Python 2.7 (Default of DSM 6.x)
-- pip (curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && sudo python get-pip.py)
-- psycopg2 (sudo pip install psycopg2/psycopg2-binary)
+- Python >= 3.5
 
-#### Getting started
-- ```
-  $ make
-  $ sudo -u postgres python main.py 
-        -p | --playlist "<playlist name>"
-		-u | --user 	"<username>"
-		-m | --mode 	<copy-single|delete-single|copy-all|delete-all>
+## Quick Start
+
+1. Install the dependencies (>=Python3.5 and pip3) and make sure both are in $PATH. If Python already exists execute the commands to get pip3:
   ```
-		
-#### Example
-- ```
-  $ sudo -u postgres python main.py -m delete-all "Test-Playlist"
+  $ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  $ sudo python3 get-pip.py
   ```
 
+2. Clone the repository inside an abritrary path e.g. $home-directory.
+
+3. Install the psycopg2 package for Python3
+  ```
+  $ sudo make
+  ```
+
+4. Check whether the script works as expected. If the help section is shown then everything will probably work fine.
+  ```
+  $ sudo -u postgres python3 main.py -h
+  ```
+
+5. Make sure the Scheduled task (Control Panel > Task Scheduler):
+	```
+    Task:       VS-Playlist-Share
+    User:       root
+    Schedule:   daily
+    Command:    sudo -u postgres python3 /volume1/homes/user/VS-Playlist-Share/main.py --daemon
+    ```
+
+
+#### Manual execution
+
+In case the admin wants to manually copy or delete playlists, the manual execution can be used as well:
+
+- ```
+  $ sudo -u postgres python3 main.py
+        --playlist "<playlist name>"
+        --user     "<username>"
+        --mode     <copy-single|delete-single|copy-all|delete-all>
+  Examples:
+    Copy playlist to an user:     sudo -u postgres python3 main.py --playlist Test --user testuser --mode copy-single
+    Delete playlist of an user:   sudo -u postgres python3 main.py --playlist Test --user testuser --mode delete-single
+    Copy playlist to all users:   sudo -u postgres python3 main.py --playlist Test --mode copy-all
+    Delete playlist of all users: sudo -u postgres python3 main.py --playlist Test --mode delete-all
+  ```
