@@ -70,14 +70,14 @@ VS-Notification:   https://github.com/heimdall-syno/VS-Notification
 
 In case the admin wants to manually copy or delete playlists, the manual execution can be used as well:
 
-- ```
-  $ sudo -u postgres python3 main.py
-        --playlist "<playlist name>"
-        --user     "<username>"
-        --mode     <copy-single|delete-single|copy-all|delete-all>
-  Examples:
-    Copy playlist to an user:     sudo -u postgres python3 main.py --playlist Test --user testuser --mode copy-single
-    Delete playlist of an user:   sudo -u postgres python3 main.py --playlist Test --user testuser --mode delete-single
-    Copy playlist to all users:   sudo -u postgres python3 main.py --playlist Test --mode copy-all
-    Delete playlist of all users: sudo -u postgres python3 main.py --playlist Test --mode delete-all
-  ```
+```
+$ sudo -u postgres python3 main.py
+      --playlist "<playlist name>"
+      --user     "<username>"
+      --mode     <copy-single|delete-single|copy-all|delete-all>
+Examples:
+  Copy playlist to an user:     sudo -u postgres python3 main.py --playlist Test --user testuser --mode copy-single
+  Delete playlist of an user:   sudo -u postgres python3 main.py --playlist Test --user testuser --mode delete-single
+  Copy playlist to all users:   sudo -u postgres python3 main.py --playlist Test --mode copy-all
+  Delete playlist of all users: sudo -u postgres python3 main.py --playlist Test --mode delete-all
+```
