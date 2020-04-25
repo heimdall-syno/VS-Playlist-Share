@@ -1,5 +1,6 @@
 import re, os, sys, argparse
 from distutils.util import strtobool
+from collections import namedtuple
 from scripts.single_mode import copy_single_mode, delete_single_mode
 from scripts.all_mode import copy_all_mode, delete_all_mode
 from scripts.daemon_mode import daemon_mode
@@ -21,6 +22,7 @@ def main():
     parser.add_argument('--daemon',   help="Whether to run daemon mode", action="store_true")
     parser.add_argument("--playlist", help="Name of a playlist", metavar='')
     parser.add_argument("--user",     help="Username", metavar='')
+    parser.add_argument("--loglvl",   help="Logging level", metavar='', default=10, type=int, nargs='?')
     parser.add_argument("--mode",     help="Copy/Delete a playlist to/of a single or all user(s): {%(choices)s}",
                                       default='copy-single', nargs='?', choices=choices, metavar="")
     args = parser.parse_args()
@@ -28,7 +30,9 @@ def main():
     args.scope = "postgres"
 
     ## Initialize logging
-    init_logging(args)
+    cfg = namedtuple('cfg', ["log_level"])
+    cfg = cfg(args.loglvl)
+    init_logging(args, cfg)
 
     ## Daemon execution
     if args.daemon:
