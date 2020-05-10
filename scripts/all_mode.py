@@ -2,7 +2,7 @@ from .vscollections import get_collection, create_new_collection
 from .vscollections import add_all_items_to_collection, delete_all_items_of_collection
 from .vscollections import delete_collection, get_all_items_of_collection
 from .connections import connect, close_connection
-from .users import get_user_selection
+from users import users_get_selection
 from prints import errmsg, debugmsg
 
 ## Add a colletion to all users
@@ -14,7 +14,7 @@ def copy_all_mode(args):
     debugmsg("Connected successfully to Synology VideoStation database", args.mode)
 
     ## Get admin and its ID
-    admin_id = get_user_selection('admin_only')[1]
+    admin_id = users_get_selection(2)[1]
 
     ## Get the collection information
     collection_info = get_collection(cur, args.playlist, admin_id)
@@ -24,7 +24,7 @@ def copy_all_mode(args):
     debugmsg("Get the playlist information", args.mode)
 
     ## Get all users except the owner of the collection
-    users_id = [u[1] for u in get_user_selection()]
+    users_id = [u[1] for u in users_get_selection()]
     if(len(users_id) == 0):
         close_connection(conn, cur)
         exit(-1)
@@ -65,7 +65,7 @@ def delete_all_mode(args):
     debugmsg("Connected successfully to Synology VideoStation database", args.mode)
 
     ## Get admin and its ID
-    admin_id = get_user_selection('admin_only')[1]
+    admin_id = users_get_selection(2)[1]
 
     ## Get all corresponding collection information
     collection_info = get_collection(cur, args.playlist)

@@ -4,7 +4,7 @@ from .vscollections import get_collections_of_user, get_all_items_of_collection
 from .vscollections import create_new_collection, add_all_items_to_collection
 from .vscollections import delete_all_items_of_collection, delete_collection
 from .connections import connect, close_connection
-from .users import get_user_selection
+from users import users_get_selection
 from prints import errmsg, debugmsg
 
 def daemon_collections_same(user_collections, admin_collections):
@@ -62,7 +62,7 @@ def daemon_mode(args):
     debugmsg("Connected successfully to Synology Video Station database", "Daemon mode")
 
     ## Get the admin ID
-    users, admin = get_user_selection('admin_users')
+    users, admin = users_get_selection(1)
 
     ## Get all collection information of the admin
     admin_collections = get_collections_of_user(cur, admin[1])

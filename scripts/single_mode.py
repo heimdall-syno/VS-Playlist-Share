@@ -2,7 +2,7 @@ from .vscollections import get_collection, create_new_collection
 from .vscollections import get_all_items_of_collection, delete_all_items_of_collection
 from .vscollections import delete_collection, add_all_items_to_collection
 from .connections import connect, close_connection
-from .users import get_userid_from_name, get_user_selection
+from users import users_get_userid, users_get_selection
 from prints import errmsg, debugmsg 
 
 ## Copy a collection to a single user
@@ -14,7 +14,7 @@ def copy_single_mode(args):
     debugmsg("Connected successfully to Synology VideoStation database" , args.mode)
 
     ## Get admin and its ID
-    admin_id = get_user_selection('admin_only')[1]
+    admin_id = users_get_selection(2)[1]
 
     ## Get the collection information
     collection_info = get_collection(cur, args.playlist, admin_id)
@@ -24,7 +24,7 @@ def copy_single_mode(args):
     debugmsg("Get the playlist information", args.mode)
 
     ## Get the userID of the passed username
-    user_id = get_userid_from_name(args.user)
+    user_id = users_get_userid(args.user)
     if(user_id == None):
         close_connection(conn, cur)
         exit(-1)
@@ -63,7 +63,7 @@ def delete_single_mode(args):
     debugmsg("Connected successfully to Synology VideoStation database", args.mode)
 
     ## Get the userID of the passed username
-    user_id = get_userid_from_name(args.user)
+    user_id = users_get_userid(args.user)
     if(user_id == None):
         close_connection(conn, cur)
         exit(-1)
